@@ -1,4 +1,7 @@
-use std::{env, fs};
+use std::{
+    env, fs,
+    io::{self, Write},
+};
 
 const STACK_SIZE: usize = 30_000;
 enum Instruction {
@@ -67,7 +70,25 @@ fn execute_to_string(input: String) -> String {
                     loop_indices.pop();
                 }
             }
-            Instruction::Input => {}
+            Instruction::Input => {
+                let mut valid = false;
+                while !valid {
+                    print!("Input a u8: ");
+                    io::stdout().flush().unwrap();
+
+                    let mut buffer = String::new();
+                    match io::stdin().read_line(&mut buffer) {
+                        Ok(_) => match buffer.trim().parse::<u8>() {
+                            Ok(int_value) => {
+                                stack[stack_pointer] = int_value;
+                                valid = true
+                            }
+                            Err(e) => println!("{e}"),
+                        },
+                        Err(e) => println!("{e}"),
+                    }
+                }
+            }
 
             Instruction::Ouput => {
                 let decimal_value = stack[stack_pointer];
