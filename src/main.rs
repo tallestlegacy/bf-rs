@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-const STACK_SIZE: usize = 10;
+const STACK_SIZE: usize = 30_000;
 enum Instruction {
     Add,
     Subtract,
@@ -38,10 +38,11 @@ fn execute_to_string(input: String) -> String {
     let mut stack: [u8; STACK_SIZE] = [0; STACK_SIZE];
     let mut stack_pointer: usize = 0;
     let mut instruction_index: usize = 0;
-    let mut loop_opening_index: i64 = -1;
+    let mut loop_indices: Vec<usize> = Vec::new();
 
     while instruction_index < input.len() {
         let character = input.chars().nth(instruction_index).unwrap();
+
         match get_instruction(character) {
             Instruction::Add => {
                 stack[stack_pointer] += 1;
@@ -53,13 +54,17 @@ fn execute_to_string(input: String) -> String {
             }
 
             Instruction::OpenLoop => {
-                loop_opening_index = instruction_index as i64;
+                if !loop_indices.clone().contains(&instruction_index) {
+                    loop_indices.push(instruction_index);
+                }
             }
             Instruction::CloseLoop => {
-                if stack[0] > 0 {
-                    instruction_index = loop_opening_index as usize;
+                if stack[stack_pointer] != 0 {
+                    if let Some(index) = loop_indices.last() {
+                        instruction_index = *index
+                    }
                 } else {
-                    loop_opening_index = -1;
+                    loop_indices.pop();
                 }
             }
             Instruction::Input => {}
